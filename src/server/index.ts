@@ -19,8 +19,9 @@ app.use(express.static(path.join(__dirname, '../', '../', 'dist')))
 
 // real auth
 app.use(async (req: Request, res: Response, next: NextFunction) => {
-	const authorization = req.cookies['cookie_session']
+	const authorization = req.cookies['cookie_session_domain']
 	console.log('authorization', authorization)
+	console.log('req.cookies', req.cookies)
 	const authorizerRef = new Authorizer({
 		// authorizerURL: 'http://localhost:8080',
 		// redirectURL: 'http://localhost:3002',
@@ -33,15 +34,16 @@ app.use(async (req: Request, res: Response, next: NextFunction) => {
 	const session = await authorizerRef.validateSession({
 		cookie: authorization,
 	})
-	console.log('>>>> session', session)
+	console.log('>>>> session.data', session?.data)
+	session.data
 	if (session) {
 		return next()
 	}
 	res.status(403).send('Unauthorized MW')
 })
 
-app.get('/api/hello', (req, res) => {
-	console.log('req.cookies', req.cookies)
+app.get('/api/hello', (_req, res) => {
+	// console.log('req.cookies', req.cookies)
 	res.send('Hello World!')
 })
 
