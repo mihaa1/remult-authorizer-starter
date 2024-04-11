@@ -1,5 +1,5 @@
 import 'dotenv/config'
-import express, { NextFunction, Request, Response } from 'express'
+import express from 'express'
 import { api } from './api'
 import { Authorizer } from '@authorizerdev/authorizer-js'
 import bodyParser from 'body-parser'
@@ -18,7 +18,7 @@ app.use(bodyParser.json())
 app.use(express.static(path.join(__dirname, '../', '../', 'dist')))
 
 // real auth
-app.use(async (req: Request, res: Response, next: NextFunction) => {
+app.use(async (req, res, next) => {
 	const authorization = req.cookies['cookie_session_domain']
 	const authorizerRef = new Authorizer({
 		authorizerURL: process.env.VITE_AUTHORIZER_URL || '',
@@ -28,10 +28,11 @@ app.use(async (req: Request, res: Response, next: NextFunction) => {
 	const session = await authorizerRef.validateSession({
 		cookie: authorization,
 	})
-	session.data
 	if (session) {
+		req.user = session.data?.user
 		return next()
 	}
+
 	res.status(403).send('Unauthorized MW')
 })
 
